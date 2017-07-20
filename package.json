@@ -1,0 +1,24 @@
+{
+  "name": "request-data",
+  "version": "0.0.1",
+  "description": "Express Request Data",
+  "main": "./js/index.js",
+  "typings": "./js/index.d.ts",
+  "scripts": {},
+  "keywords": [
+    "REST",
+    "API"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wchang28/request-data.git"
+  },
+  "author": "Wen Chang",
+  "license": "MIT",
+  "dependencies": {
+    "@types/express": "^4.0.36",
+    "@types/node": "^6.0.73",
+    "express": "^4.15.3",
+    "http-status-code-lookup": "https://github.com/wchang28/http-status-code-lookup.git"
+  }
+}
