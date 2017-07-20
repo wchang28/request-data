@@ -30,9 +30,15 @@ export class RequestData<G> implements IRequestData<G> {
     set<T>(key: string, value: T) : void {this.RequestInfo[key] = value;}
 }
 
-export type Factory<RQD> = (req: express.Request) => RQD;
+export function get<G>(req: express.Request) : IRequestData<G> {return new RequestData<G>(req);}
 
-export function EndwareTemplete<G, RQD extends RequestData<G>, T>(factory: Factory<RQD>, handler: (rqd: RQD) => Promise<T>) : express.RequestHandler {
+export type Factory<IRQD> = (req: express.Request) => IRQD;
+
+export type EndwareHandler<IRQD, T> = (rqd: IRQD) => Promise<T>;
+export type ResourceMiddlewareHandler<IRQD, T> = (rqd: IRQD) => Promise<T>;
+export type PermissionMiddlewareHandler<IRQD> = (rqd: IRQD) => Promise<any>;
+
+export function EndwareTemplete<G, IRQD extends IRequestData<G>, T>(factory: Factory<IRQD>, handler: EndwareHandler<IRQD, T>) : express.RequestHandler {
     return (req: express.Request, res: express.Response) => {
         handler(factory(req))
         .then((value: T) => {
@@ -43,7 +49,7 @@ export function EndwareTemplete<G, RQD extends RequestData<G>, T>(factory: Facto
     };
 }
 
-export function ResourceMiddlewareTemplete<G, RQD extends RequestData<G>, T>(factory: Factory<RQD>, handler: (rqd: RQD) => Promise<T>, storageKey?: string) : express.RequestHandler {
+export function ResourceMiddlewareTemplete<G, IRQD extends IRequestData<G>, T>(factory: Factory<IRQD>, handler: ResourceMiddlewareHandler<IRQD, T>, storageKey?: string) : express.RequestHandler {
     return (req: express.Request, res: express.Response, next: express.NextFunction) => {
         let rqd = factory(req);
         handler(rqd)
@@ -56,7 +62,7 @@ export function ResourceMiddlewareTemplete<G, RQD extends RequestData<G>, T>(fac
     };
 }
 
-export function PermissionMiddlewareTemplete<G, RQD extends RequestData<G>>(factory: Factory<RQD>, handler: (rqd: RQD) => Promise<any>) : express.RequestHandler {
+export function PermissionMiddlewareTemplete<G, IRQD extends IRequestData<G>>(factory: Factory<IRQD>, handler: PermissionMiddlewareHandler<IRQD>) : express.RequestHandler {
     return (req: express.Request, res: express.Response, next: express.NextFunction) => {
         handler(factory(req))
         .then((value: any) => {
@@ -74,32 +80,36 @@ export interface IGlobal {
     config: any;
 }
 
-export class MyRequestData extends RequestData<IGlobal> {
+export interface IMyRequestData extends RequestData<IGlobal> {
+    readonly Config: any;
+}
+
+export class MyRequestData extends RequestData<IGlobal> implements IMyRequestData {
     constructor(req: express.Request) {super(req);}
     get Config(): any {return this.Global.config}
 } 
 
-export function Endware<T>(handler: (rqd: MyRequestData) => Promise<T>) : express.RequestHandler {
-    return EndwareTemplete<IGlobal, MyRequestData, T>((req: express.Request) => new MyRequestData(req), handler);
+export function Endware<T>(handler: (rqd: IMyRequestData) => Promise<T>) : express.RequestHandler {
+    return EndwareTemplete<IGlobal, IMyRequestData, T>((req: express.Request) => new MyRequestData(req), handler);
 }
 
-export function ResourceMiddleware<T>(handler: (rqd: MyRequestData) => Promise<T>, storageKey?: string) : express.RequestHandler {
-    return ResourceMiddlewareTemplete<IGlobal, MyRequestData, T>((req: express.Request) => new MyRequestData(req), handler, storageKey);
+export function ResourceMiddleware<T>(handler: (rqd: IMyRequestData) => Promise<T>, storageKey?: string) : express.RequestHandler {
+    return ResourceMiddlewareTemplete<IGlobal, IMyRequestData, T>((req: express.Request) => new MyRequestData(req), handler, storageKey);
 }
 
-export function PermissionMiddleware(handler: (rqd: MyRequestData) => Promise<any>) : express.RequestHandler {
-    return PermissionMiddlewareTemplete<IGlobal, MyRequestData>((req: express.Request) => new MyRequestData(req), handler);
+export function PermissionMiddleware(handler: (rqd: IMyRequestData) => Promise<any>) : express.RequestHandler {
+    return PermissionMiddlewareTemplete<IGlobal, IMyRequestData>((req: express.Request) => new MyRequestData(req), handler);
 }
 
-let endware = Endware((rqd: MyRequestData) => {
+let endware = Endware((rqd: IMyRequestData) => {
     return Promise.resolve<any>(rqd.Config);
 });
 
-let resourceMW = ResourceMiddleware((rqd: MyRequestData) => {
+let resourceMW = ResourceMiddleware((rqd: IMyRequestData) => {
     return Promise.resolve<any>(rqd.Config);
 }, "User");
 
-let permissionMW = PermissionMiddleware((rqd: MyRequestData) => {
+let permissionMW = PermissionMiddleware((rqd: IMyRequestData) => {
     return Promise.resolve<any>(null);
 });
 */

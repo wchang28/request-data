@@ -26,7 +26,11 @@ export declare class RequestData<G> implements IRequestData<G> {
     get<T>(key: string): T;
     set<T>(key: string, value: T): void;
 }
-export declare type Factory<RQD> = (req: express.Request) => RQD;
-export declare function EndwareTemplete<G, RQD extends RequestData<G>, T>(factory: Factory<RQD>, handler: (rqd: RQD) => Promise<T>): express.RequestHandler;
-export declare function ResourceMiddlewareTemplete<G, RQD extends RequestData<G>, T>(factory: Factory<RQD>, handler: (rqd: RQD) => Promise<T>, storageKey?: string): express.RequestHandler;
-export declare function PermissionMiddlewareTemplete<G, RQD extends RequestData<G>>(factory: Factory<RQD>, handler: (rqd: RQD) => Promise<any>): express.RequestHandler;
+export declare function get<G>(req: express.Request): IRequestData<G>;
+export declare type Factory<IRQD> = (req: express.Request) => IRQD;
+export declare type EndwareHandler<IRQD, T> = (rqd: IRQD) => Promise<T>;
+export declare type ResourceMiddlewareHandler<IRQD, T> = (rqd: IRQD) => Promise<T>;
+export declare type PermissionMiddlewareHandler<IRQD> = (rqd: IRQD) => Promise<any>;
+export declare function EndwareTemplete<G, IRQD extends IRequestData<G>, T>(factory: Factory<IRQD>, handler: EndwareHandler<IRQD, T>): express.RequestHandler;
+export declare function ResourceMiddlewareTemplete<G, IRQD extends IRequestData<G>, T>(factory: Factory<IRQD>, handler: ResourceMiddlewareHandler<IRQD, T>, storageKey?: string): express.RequestHandler;
+export declare function PermissionMiddlewareTemplete<G, IRQD extends IRequestData<G>>(factory: Factory<IRQD>, handler: PermissionMiddlewareHandler<IRQD>): express.RequestHandler;
