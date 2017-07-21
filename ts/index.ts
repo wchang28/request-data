@@ -97,7 +97,7 @@ export function ResourceMiddleware<T>(handler: (rqd: IMyRequestData) => Promise<
     return ResourceMiddlewareTemplete<IGlobal, IMyRequestData, T>((req: express.Request) => new MyRequestData(req), handler, storageKey);
 }
 
-export function PermissionMiddleware(handler: (rqd: IMyRequestData) => Promise<any>) : express.RequestHandler {
+export function PermissionMiddleware(handler: (rqd: IMyRequestData) => Promise<void>) : express.RequestHandler {
     return PermissionMiddlewareTemplete<IGlobal, IMyRequestData>((req: express.Request) => new MyRequestData(req), handler);
 }
 
@@ -106,10 +106,10 @@ let endware = Endware((rqd: IMyRequestData) => {
 });
 
 let resourceMW = ResourceMiddleware((rqd: IMyRequestData) => {
-    return Promise.resolve<any>(rqd.Config);
+    return Promise.resolve<any>(rqd.Config.User);
 }, "User");
 
 let permissionMW = PermissionMiddleware((rqd: IMyRequestData) => {
-    return Promise.resolve<any>(null);
+    return Promise.resolve();
 });
 */
