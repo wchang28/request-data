@@ -82,7 +82,7 @@ exports.ResourceMiddlewareTemplete = ResourceMiddlewareTemplete;
 function PermissionMiddlewareTemplete(factory, handler) {
     return function (req, res, next) {
         handler(factory(req))
-            .then(function (value) {
+            .then(function () {
             next();
         }).catch(function (err) {
             res.status(http_status_code_lookup_1.lookup(err.error, 403)).json(err);

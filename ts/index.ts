@@ -36,7 +36,7 @@ export type Factory<IRQD> = (req: express.Request) => IRQD;
 
 export type EndwareHandler<IRQD, T> = (rqd: IRQD) => Promise<T>;
 export type ResourceMiddlewareHandler<IRQD, T> = (rqd: IRQD) => Promise<T>;
-export type PermissionMiddlewareHandler<IRQD> = (rqd: IRQD) => Promise<any>;
+export type PermissionMiddlewareHandler<IRQD> = (rqd: IRQD) => Promise<void>;
 
 export function EndwareTemplete<G, IRQD extends IRequestData<G>, T>(factory: Factory<IRQD>, handler: EndwareHandler<IRQD, T>) : express.RequestHandler {
     return (req: express.Request, res: express.Response) => {
@@ -65,7 +65,7 @@ export function ResourceMiddlewareTemplete<G, IRQD extends IRequestData<G>, T>(f
 export function PermissionMiddlewareTemplete<G, IRQD extends IRequestData<G>>(factory: Factory<IRQD>, handler: PermissionMiddlewareHandler<IRQD>) : express.RequestHandler {
     return (req: express.Request, res: express.Response, next: express.NextFunction) => {
         handler(factory(req))
-        .then((value: any) => {
+        .then(() => {
             next();
         }).catch((err: any) => {
             res.status(lookup(err.error, 403)).json(err);

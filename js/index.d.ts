@@ -30,7 +30,7 @@ export declare function get<G>(req: express.Request): IRequestData<G>;
 export declare type Factory<IRQD> = (req: express.Request) => IRQD;
 export declare type EndwareHandler<IRQD, T> = (rqd: IRQD) => Promise<T>;
 export declare type ResourceMiddlewareHandler<IRQD, T> = (rqd: IRQD) => Promise<T>;
-export declare type PermissionMiddlewareHandler<IRQD> = (rqd: IRQD) => Promise<any>;
+export declare type PermissionMiddlewareHandler<IRQD> = (rqd: IRQD) => Promise<void>;
 export declare function EndwareTemplete<G, IRQD extends IRequestData<G>, T>(factory: Factory<IRQD>, handler: EndwareHandler<IRQD, T>): express.RequestHandler;
 export declare function ResourceMiddlewareTemplete<G, IRQD extends IRequestData<G>, T>(factory: Factory<IRQD>, handler: ResourceMiddlewareHandler<IRQD, T>, storageKey?: string): express.RequestHandler;
 export declare function PermissionMiddlewareTemplete<G, IRQD extends IRequestData<G>>(factory: Factory<IRQD>, handler: PermissionMiddlewareHandler<IRQD>): express.RequestHandler;
