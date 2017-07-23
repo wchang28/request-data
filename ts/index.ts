@@ -1,5 +1,7 @@
 import * as express from "express";
 import {lookup} from "http-status-code-lookup";
+import {ReadableContent} from "rest-api-interfaces";
+import {Readable} from "stream";
 
 export interface IRequestData<G> {
     req: express.Request;
@@ -34,15 +36,33 @@ export function get<G>(req: express.Request) : IRequestData<G> {return new Reque
 
 export type Factory<IRQD> = (req: express.Request) => IRQD;
 
-export type EndwareHandler<IRQD, T> = (rqd: IRQD) => Promise<T>;
+export type JSONEndwareHandler<IRQD, T> = (rqd: IRQD) => Promise<T>;
 export type ResourceMiddlewareHandler<IRQD, T> = (rqd: IRQD) => Promise<T>;
 export type PermissionMiddlewareHandler<IRQD> = (rqd: IRQD) => Promise<void>;
 
-export function EndwareTemplete<G, IRQD extends IRequestData<G>, T>(factory: Factory<IRQD>, handler: EndwareHandler<IRQD, T>) : express.RequestHandler {
+export type ReadableStreamContent = ReadableContent<Readable>;
+export type ReadabeStreamEndwareHandler<IRQD> = (rqd: IRQD) => Promise<ReadableStreamContent>;
+
+export function JSONEndwareTemplete<G, IRQD extends IRequestData<G>, T>(factory: Factory<IRQD>, handler: JSONEndwareHandler<IRQD, T>) : express.RequestHandler {
     return (req: express.Request, res: express.Response) => {
         handler(factory(req))
         .then((value: T) => {
             res.jsonp(value);
+        }).catch((err: any) => {
+            res.status(lookup(err.error)).json(err);
+        });
+    };
+}
+
+export function ReadableStreamEndwareTemplete<G, IRQD extends IRequestData<G>>(factory: Factory<IRQD>, handler: ReadabeStreamEndwareHandler<IRQD>) : express.RequestHandler {
+    return (req: express.Request, res: express.Response) => {
+        handler(factory(req))
+        .then((value: ReadableStreamContent) => {
+            let contentInfo = value.info;
+            res.setHeader("content-type", contentInfo.type ? contentInfo.type : "application/octet-stream");
+            if (contentInfo.size) res.setHeader("content-length", contentInfo.size.toString());
+            let readable = value.readable;
+            readable.pipe(res);
         }).catch((err: any) => {
             res.status(lookup(err.error)).json(err);
         });

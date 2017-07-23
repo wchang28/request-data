@@ -54,7 +54,7 @@ var RequestData = (function () {
 exports.RequestData = RequestData;
 function get(req) { return new RequestData(req); }
 exports.get = get;
-function EndwareTemplete(factory, handler) {
+function JSONEndwareTemplete(factory, handler) {
     return function (req, res) {
         handler(factory(req))
             .then(function (value) {
@@ -64,7 +64,23 @@ function EndwareTemplete(factory, handler) {
         });
     };
 }
-exports.EndwareTemplete = EndwareTemplete;
+exports.JSONEndwareTemplete = JSONEndwareTemplete;
+function ReadableStreamEndwareTemplete(factory, handler) {
+    return function (req, res) {
+        handler(factory(req))
+            .then(function (value) {
+            var contentInfo = value.info;
+            res.setHeader("content-type", contentInfo.type ? contentInfo.type : "application/octet-stream");
+            if (contentInfo.size)
+                res.setHeader("content-length", contentInfo.size.toString());
+            var readable = value.readable;
+            readable.pipe(res);
+        }).catch(function (err) {
+            res.status(http_status_code_lookup_1.lookup(err.error)).json(err);
+        });
+    };
+}
+exports.ReadableStreamEndwareTemplete = ReadableStreamEndwareTemplete;
 function ResourceMiddlewareTemplete(factory, handler, storageKey) {
     return function (req, res, next) {
         var rqd = factory(req);
@@ -113,7 +129,7 @@ export function ResourceMiddleware<T>(handler: (rqd: IMyRequestData) => Promise<
     return ResourceMiddlewareTemplete<IGlobal, IMyRequestData, T>((req: express.Request) => new MyRequestData(req), handler, storageKey);
 }
 
-export function PermissionMiddleware(handler: (rqd: IMyRequestData) => Promise<any>) : express.RequestHandler {
+export function PermissionMiddleware(handler: (rqd: IMyRequestData) => Promise<void>) : express.RequestHandler {
     return PermissionMiddlewareTemplete<IGlobal, IMyRequestData>((req: express.Request) => new MyRequestData(req), handler);
 }
 
@@ -122,10 +138,10 @@ let endware = Endware((rqd: IMyRequestData) => {
 });
 
 let resourceMW = ResourceMiddleware((rqd: IMyRequestData) => {
-    return Promise.resolve<any>(rqd.Config);
+    return Promise.resolve<any>(rqd.Config.User);
 }, "User");
 
 let permissionMW = PermissionMiddleware((rqd: IMyRequestData) => {
-    return Promise.resolve<any>(null);
+    return Promise.resolve();
 });
 */ 
