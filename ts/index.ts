@@ -21,7 +21,7 @@ export class RequestData<G> implements IRequestData<G> {
         if (!this.req["__req_info__"]) this.req["__req_info__"] = {};
     }
     private get RequestInfo() : {[key: string]: any} {return this.req["__req_info__"];}
-    get Global() : G {return <G>(this.req.app.get("gloabl"));}
+    get Global() : G {return <G>(this.req.app.get("global"));}
     get Headers(): any {return this.req.headers;}
     get Query(): any {return this.req.query;}
     get Body(): any {return this.req.body;}

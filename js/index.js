@@ -13,7 +13,7 @@ var RequestData = (function () {
         configurable: true
     });
     Object.defineProperty(RequestData.prototype, "Global", {
-        get: function () { return (this.req.app.get("gloabl")); },
+        get: function () { return (this.req.app.get("global")); },
         enumerable: true,
         configurable: true
     });
